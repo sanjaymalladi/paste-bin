@@ -1,14 +1,15 @@
 import { kv } from '@vercel/kv';
 
 export default async function Page({ params }) {
-  // Fetch the HTML raw from the database
-  const html = await kv.get(params.id);
+  // ⬇️ FIX: Await params before using them (Next.js 15 requirement)
+  const { id } = await params; 
+
+  // Now we can safely get the HTML using the ID
+  const html = await kv.get(id);
 
   if (!html) return <div>Not Found or Expired</div>;
 
-  // Render it purely as raw HTML
   return (
     <div dangerouslySetInnerHTML={{ __html: html }} />
   );
 }
-
