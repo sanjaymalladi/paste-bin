@@ -1,6 +1,26 @@
 import { kv } from '@vercel/kv';
 import Link from 'next/link';
 
+export async function generateMetadata({ params }) {
+  const { id } = await params;
+  const html = await kv.get(id);
+
+  let title = 'Code Snippet';
+  if (html) {
+    const match = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    if (match && match[1]) {
+      title = match[1];
+    }
+  }
+
+  return {
+    title,
+    openGraph: {
+      title,
+    },
+  };
+}
+
 export default async function Page({ params }) {
   const { id } = await params;
   const html = await kv.get(id);
