@@ -10,8 +10,16 @@ export default function Home() {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [preview, setPreview] = useState(false);
   const router = useRouter();
+
+  const handlePreview = () => {
+    if (!code.trim()) return;
+    const blob = new Blob([code], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    // revoke after a short delay — the new tab will have loaded by then
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  };
 
   const handleSave = async () => {
     if (!code.trim()) return;
@@ -39,6 +47,7 @@ export default function Home() {
   };
 
   const charCount = code.length;
+  const hasCode = code.trim().length > 0;
 
   return (
     <div style={{ position: 'relative', minHeight: '100dvh', overflow: 'hidden' }}>
@@ -85,7 +94,7 @@ export default function Home() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: preview ? '2rem 1.5rem' : '2rem 1.5rem',
+          padding: '2rem 1.5rem',
         }}
       >
         {/* ─── Glass Card ─── */}
@@ -93,21 +102,19 @@ export default function Home() {
           className="liquid-glass-solid animate-fade-rise"
           style={{
             width: '100%',
-            maxWidth: preview ? 'min(95vw, 1380px)' : '720px',
-            padding: '2.5rem',
+            maxWidth: '720px',
+            padding: '3rem',
             borderRadius: '24px',
-            transition: 'max-width 0.45s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
-          {/* ─── Header ─── */}
+          {/* Header */}
           <div
             className="animate-fade-rise-d1"
             style={{
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'baseline',
               justifyContent: 'space-between',
-              marginBottom: '1.75rem',
-              gap: '1rem',
+              marginBottom: '2rem',
             }}
           >
             <h1
@@ -118,61 +125,10 @@ export default function Home() {
                 color: 'var(--foreground)',
                 letterSpacing: '-0.02em',
                 lineHeight: 1,
-                flexShrink: 0,
               }}
             >
               paste<span style={{ color: 'var(--muted-foreground)' }}>.</span>
             </h1>
-
-            {/* ─── Mode Toggle Pills ─── */}
-            <div
-              className="liquid-glass"
-              style={{
-                display: 'flex',
-                borderRadius: '9999px',
-                padding: '3px',
-                gap: '2px',
-              }}
-            >
-              <button
-                onClick={() => setPreview(false)}
-                style={{
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '11px',
-                  fontWeight: 500,
-                  letterSpacing: '0.04em',
-                  padding: '5px 16px',
-                  borderRadius: '9999px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  background: !preview ? 'rgba(255,255,255,0.15)' : 'transparent',
-                  color: !preview ? '#fff' : 'rgba(255,255,255,0.4)',
-                }}
-              >
-                Code
-              </button>
-              <button
-                onClick={() => setPreview(true)}
-                disabled={!code.trim()}
-                style={{
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '11px',
-                  fontWeight: 500,
-                  letterSpacing: '0.04em',
-                  padding: '5px 16px',
-                  borderRadius: '9999px',
-                  border: 'none',
-                  cursor: !code.trim() ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.2s ease',
-                  background: preview ? 'rgba(255,255,255,0.15)' : 'transparent',
-                  color: preview ? '#fff' : 'rgba(255,255,255,0.4)',
-                  opacity: !code.trim() ? 0.35 : 1,
-                }}
-              >
-                Preview
-              </button>
-            </div>
 
             <span
               style={{
@@ -182,94 +138,32 @@ export default function Home() {
                 color: 'var(--muted-foreground)',
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
-                flexShrink: 0,
               }}
             >
               drop · share · done
             </span>
           </div>
 
-          {/* ─── Main Panel ─── */}
-          <div
-            className="animate-fade-rise-d2"
-            style={{
-              display: 'flex',
-              gap: '1.25rem',
-              alignItems: 'stretch',
-            }}
-          >
-            {/* Editor */}
-            <div
+          {/* Editor */}
+          <div className="animate-fade-rise-d2">
+            <Editor
+              value={code}
+              onValueChange={code => setCode(code)}
+              highlight={code => Prism.highlight(code, Prism.languages.markup, 'markup')}
+              padding={24}
+              placeholder="paste your html here..."
+              className="paste-textarea"
+              textareaId="code-input"
               style={{
-                flex: preview ? '0 0 42%' : '1',
-                transition: 'flex 0.45s cubic-bezier(0.4, 0, 0.2, 1)',
-                minWidth: 0,
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 13,
+                height: 340,
+                overflowY: 'auto',
               }}
-            >
-              <Editor
-                value={code}
-                onValueChange={code => setCode(code)}
-                highlight={code => Prism.highlight(code, Prism.languages.markup, 'markup')}
-                padding={24}
-                placeholder="paste your html here..."
-                className="paste-textarea"
-                textareaId="code-input"
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 13,
-                  height: 340,
-                  overflowY: 'auto',
-                }}
-              />
-            </div>
-
-            {/* ─── Live Preview Pane ─── */}
-            {preview && (
-              <div
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  borderRadius: '16px',
-                  overflow: 'hidden',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  background: '#fff',
-                  position: 'relative',
-                }}
-              >
-                {/* preview label */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '12px',
-                    zIndex: 10,
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '9px',
-                    fontWeight: 600,
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase',
-                    color: 'rgba(0,0,0,0.25)',
-                    pointerEvents: 'none',
-                  }}
-                >
-                  live preview
-                </div>
-                <iframe
-                  srcDoc={code}
-                  sandbox="allow-scripts allow-forms allow-modals allow-popups allow-same-origin"
-                  title="Live Preview"
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    height: '340px',
-                    border: 'none',
-                  }}
-                />
-              </div>
-            )}
+            />
           </div>
 
-          {/* ─── Action Row ─── */}
+          {/* Action Row */}
           <div
             className="animate-fade-rise-d3"
             style={{
@@ -281,6 +175,7 @@ export default function Home() {
               gap: '0.75rem',
             }}
           >
+            {/* Left: meta info */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
               <span
                 style={{
@@ -309,35 +204,66 @@ export default function Home() {
               </span>
             </div>
 
-            <button
-              id="save-button"
-              onClick={handleSave}
-              disabled={loading || !code.trim()}
-              className="liquid-glass"
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '13px',
-                fontWeight: 500,
-                letterSpacing: '0.02em',
-                padding: '0.65rem 2rem',
-                color: 'var(--foreground)',
-                borderRadius: '9999px',
-                cursor: loading || !code.trim() ? 'not-allowed' : 'pointer',
-                opacity: !code.trim() ? 0.3 : 1,
-                transition: 'all 0.3s ease, transform 0.2s ease',
-                transform: 'scale(1)',
-              }}
-              onMouseEnter={(e) => {
-                if (!loading && code.trim()) {
-                  e.currentTarget.style.transform = 'scale(1.03)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-            >
-              {loading ? 'saving...' : 'get link →'}
-            </button>
+            {/* Right: Preview + Get Link */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              {/* Preview button */}
+              <button
+                id="preview-button"
+                onClick={handlePreview}
+                disabled={!hasCode}
+                className="liquid-glass"
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  letterSpacing: '0.02em',
+                  padding: '0.65rem 1.5rem',
+                  color: 'var(--foreground)',
+                  borderRadius: '9999px',
+                  cursor: !hasCode ? 'not-allowed' : 'pointer',
+                  opacity: !hasCode ? 0.3 : 0.75,
+                  transition: 'all 0.3s ease, transform 0.2s ease',
+                  transform: 'scale(1)',
+                }}
+                onMouseEnter={(e) => {
+                  if (hasCode) e.currentTarget.style.transform = 'scale(1.03)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                preview ↗
+              </button>
+
+              {/* Get Link button */}
+              <button
+                id="save-button"
+                onClick={handleSave}
+                disabled={loading || !hasCode}
+                className="liquid-glass"
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  letterSpacing: '0.02em',
+                  padding: '0.65rem 2rem',
+                  color: 'var(--foreground)',
+                  borderRadius: '9999px',
+                  cursor: loading || !hasCode ? 'not-allowed' : 'pointer',
+                  opacity: !hasCode ? 0.3 : 1,
+                  transition: 'all 0.3s ease, transform 0.2s ease',
+                  transform: 'scale(1)',
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading && hasCode) e.currentTarget.style.transform = 'scale(1.03)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                {loading ? 'saving...' : 'get link →'}
+              </button>
+            </div>
           </div>
         </div>
 
