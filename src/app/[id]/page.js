@@ -125,63 +125,18 @@ export default async function Page({ params }) {
   }
 
   return (
-    <>
-      {/* ─── Top Bar ─── */}
-      <nav
-        className="animate-fade-rise"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0.75rem 2rem',
-          background: 'rgba(0, 20, 40, 0.6)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-          zIndex: 100,
-        }}
-      >
-        <Link
-          href="/"
-          style={{
-            fontFamily: "'Instrument Serif', serif",
-            fontSize: '1.2rem',
-            fontWeight: 400,
-            color: '#fff',
-            textDecoration: 'none',
-          }}
-        >
-          paste<span style={{ color: 'var(--muted-foreground)' }}>.</span>
-        </Link>
-
-        <Link
-          href="/"
-          className="liquid-glass"
-          style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: '11px',
-            fontWeight: 500,
-            color: 'rgba(255,255,255,0.7)',
-            textDecoration: 'none',
-            letterSpacing: '0.04em',
-            padding: '5px 14px',
-            borderRadius: '9999px',
-          }}
-        >
-          + new paste
-        </Link>
-      </nav>
-
-      {/* ─── Content ─── */}
-      <div
-        className="animate-fade-rise-d1"
-        style={{ paddingTop: '4rem', background: '#fff', minHeight: '100dvh' }}
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
-    </>
+    <iframe
+      srcDoc={html}
+      style={{
+        display: 'block',
+        position: 'fixed',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        border: 'none',
+      }}
+      sandbox="allow-scripts allow-forms allow-modals allow-popups allow-same-origin"
+      title="Paste Preview"
+    />
   );
 }
