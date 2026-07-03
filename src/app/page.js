@@ -10,6 +10,7 @@ export default function Home() {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [preview, setPreview] = useState(false);
   const router = useRouter();
 
   const handleSave = async () => {
@@ -84,7 +85,7 @@ export default function Home() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '2rem 1.5rem',
+          padding: preview ? '2rem 1.5rem' : '2rem 1.5rem',
         }}
       >
         {/* ─── Glass Card ─── */}
@@ -92,19 +93,21 @@ export default function Home() {
           className="liquid-glass-solid animate-fade-rise"
           style={{
             width: '100%',
-            maxWidth: '720px',
-            padding: '3rem',
+            maxWidth: preview ? 'min(95vw, 1380px)' : '720px',
+            padding: '2.5rem',
             borderRadius: '24px',
+            transition: 'max-width 0.45s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
-          {/* Header */}
+          {/* ─── Header ─── */}
           <div
             className="animate-fade-rise-d1"
             style={{
               display: 'flex',
-              alignItems: 'baseline',
+              alignItems: 'center',
               justifyContent: 'space-between',
-              marginBottom: '2rem',
+              marginBottom: '1.75rem',
+              gap: '1rem',
             }}
           >
             <h1
@@ -115,10 +118,61 @@ export default function Home() {
                 color: 'var(--foreground)',
                 letterSpacing: '-0.02em',
                 lineHeight: 1,
+                flexShrink: 0,
               }}
             >
               paste<span style={{ color: 'var(--muted-foreground)' }}>.</span>
             </h1>
+
+            {/* ─── Mode Toggle Pills ─── */}
+            <div
+              className="liquid-glass"
+              style={{
+                display: 'flex',
+                borderRadius: '9999px',
+                padding: '3px',
+                gap: '2px',
+              }}
+            >
+              <button
+                onClick={() => setPreview(false)}
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  letterSpacing: '0.04em',
+                  padding: '5px 16px',
+                  borderRadius: '9999px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  background: !preview ? 'rgba(255,255,255,0.15)' : 'transparent',
+                  color: !preview ? '#fff' : 'rgba(255,255,255,0.4)',
+                }}
+              >
+                Code
+              </button>
+              <button
+                onClick={() => setPreview(true)}
+                disabled={!code.trim()}
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  letterSpacing: '0.04em',
+                  padding: '5px 16px',
+                  borderRadius: '9999px',
+                  border: 'none',
+                  cursor: !code.trim() ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease',
+                  background: preview ? 'rgba(255,255,255,0.15)' : 'transparent',
+                  color: preview ? '#fff' : 'rgba(255,255,255,0.4)',
+                  opacity: !code.trim() ? 0.35 : 1,
+                }}
+              >
+                Preview
+              </button>
+            </div>
 
             <span
               style={{
@@ -128,32 +182,94 @@ export default function Home() {
                 color: 'var(--muted-foreground)',
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
+                flexShrink: 0,
               }}
             >
               drop · share · done
             </span>
           </div>
 
-          {/* Editor */}
-          <div className="animate-fade-rise-d2">
-            <Editor
-              value={code}
-              onValueChange={code => setCode(code)}
-              highlight={code => Prism.highlight(code, Prism.languages.markup, 'markup')}
-              padding={24}
-              placeholder="paste your html here..."
-              className="paste-textarea"
-              textareaId="code-input"
+          {/* ─── Main Panel ─── */}
+          <div
+            className="animate-fade-rise-d2"
+            style={{
+              display: 'flex',
+              gap: '1.25rem',
+              alignItems: 'stretch',
+            }}
+          >
+            {/* Editor */}
+            <div
               style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 13,
-                height: 340,
-                overflowY: 'auto',
+                flex: preview ? '0 0 42%' : '1',
+                transition: 'flex 0.45s cubic-bezier(0.4, 0, 0.2, 1)',
+                minWidth: 0,
               }}
-            />
+            >
+              <Editor
+                value={code}
+                onValueChange={code => setCode(code)}
+                highlight={code => Prism.highlight(code, Prism.languages.markup, 'markup')}
+                padding={24}
+                placeholder="paste your html here..."
+                className="paste-textarea"
+                textareaId="code-input"
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 13,
+                  height: 340,
+                  overflowY: 'auto',
+                }}
+              />
+            </div>
+
+            {/* ─── Live Preview Pane ─── */}
+            {preview && (
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: '#fff',
+                  position: 'relative',
+                }}
+              >
+                {/* preview label */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '12px',
+                    zIndex: 10,
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '9px',
+                    fontWeight: 600,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    color: 'rgba(0,0,0,0.25)',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  live preview
+                </div>
+                <iframe
+                  srcDoc={code}
+                  sandbox="allow-scripts allow-forms allow-modals allow-popups allow-same-origin"
+                  title="Live Preview"
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    height: '340px',
+                    border: 'none',
+                  }}
+                />
+              </div>
+            )}
           </div>
 
-          {/* Action Row */}
+          {/* ─── Action Row ─── */}
           <div
             className="animate-fade-rise-d3"
             style={{
