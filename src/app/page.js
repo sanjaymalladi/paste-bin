@@ -14,11 +14,8 @@ export default function Home() {
 
   const handlePreview = () => {
     if (!code.trim()) return;
-    const blob = new Blob([code], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
-    // revoke after a short delay — the new tab will have loaded by then
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    sessionStorage.setItem('paste_preview', code);
+    router.push('/preview');
   };
 
   const handleSave = async () => {
